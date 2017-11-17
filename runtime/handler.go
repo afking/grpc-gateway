@@ -39,6 +39,11 @@ func ForwardResponseStream(ctx context.Context, mux *ServeMux, marshaler Marshal
 	}
 	w.WriteHeader(http.StatusOK)
 	f.Flush()
+
+	var delimiter []byte
+	if marshaler.ContentType() == "application/json" {
+		delimiter = []byte("\n")
+	}
 	for {
 		resp, err := recv()
 		if err == io.EOF {
@@ -60,6 +65,10 @@ func ForwardResponseStream(ctx context.Context, mux *ServeMux, marshaler Marshal
 		}
 		if _, err = w.Write(buf); err != nil {
 			grpclog.Printf("Failed to send response chunk: %v", err)
+			return
+		}
+		if _, err = w.Write(delimiter); err != nil {
+			grpclog.Printf("Failed to send response delimintor: %v", err)
 			return
 		}
 		f.Flush()
@@ -140,7 +149,7 @@ func handleForwardResponseStreamError(marshaler Marshaler, w http.ResponseWriter
 		grpclog.Printf("Failed to marshal an error: %v", merr)
 		return
 	}
-	if _, werr := fmt.Fprintf(w, "%s\n", buf); werr != nil {
+	if _, werr := w.Write(buf); err != nil {
 		grpclog.Printf("Failed to notify error to client: %v", werr)
 		return
 	}

@@ -59,6 +59,7 @@ func TestForwardResponseStream(t *testing.T) {
 			t.Errorf("marshaler.Marshal() failed %v", err)
 		}
 		want = append(want, b...)
+		want = append(want, []byte("\n")...)
 	}
 
 	if string(body) != string(want) {
