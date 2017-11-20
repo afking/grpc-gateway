@@ -41,7 +41,7 @@ func MarshalerForRequest(mux *ServeMux, r *http.Request) (inbound Marshaler, out
 		inbound = mux.marshalers.mimeMap[MIMEWildcard]
 	}
 	if outbound == nil {
-		outbound = inbound
+		outbound = mux.marshalers.mimeMap[MIMEWildcard]
 	}
 
 	return inbound, outbound
